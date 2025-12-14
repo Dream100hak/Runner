@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 
 /// <summary>
 /// Main Player class that manages the player's state and interactions with the game world.
@@ -8,6 +10,8 @@ public class Player : MonoBehaviour
     private PlayerController _playerController;
     private PlayerInventory _playerInventory;
     private Animator _animator;
+    [SerializeField] private Slider _hpSlider;
+    [SerializeField] private TextMeshProUGUI _hpText;
     private bool _isAlive = true;
 
     private void Awake()
@@ -22,6 +26,30 @@ public class Player : MonoBehaviour
             Debug.LogError("Player: PlayerInventory component not found");
         if (_animator == null)
             Debug.LogError("Player: Animator component not found");
+
+        // If HP slider not assigned in inspector, try to find by name
+        if (_hpSlider == null)
+        {
+            var go = GameObject.Find("UI_HpBar");
+            if (go != null)
+            {
+                _hpSlider = go.GetComponent<Slider>();
+                if (_hpSlider == null)
+                    Debug.LogWarning("Player: Found UI_HpBar but no Slider component attached");
+            }
+        }
+
+        // If HP text not assigned, try to find TextMeshPro object named UI_HPBarText
+        if (_hpText == null)
+        {
+            var textGo = GameObject.Find("UI_HPBarText");
+            if (textGo != null)
+            {
+                _hpText = textGo.GetComponent<TextMeshProUGUI>();
+                if (_hpText == null)
+                    Debug.LogWarning("Player: Found UI_HPBarText but no TextMeshProUGUI component attached");
+            }
+        }
     }
 
     private void Start()
@@ -30,11 +58,32 @@ public class Player : MonoBehaviour
         if (_playerInventory != null)
         {
             _playerInventory.Initialize();
+            // Initialize HP bar values
+            if (_hpSlider != null)
+            {
+                _hpSlider.maxValue = _playerInventory.MaxHealth;
+                _hpSlider.value = _playerInventory.CurrentHealth;
+            }
+            if (_hpText != null)
+            {
+                _hpText.text = $"{_playerInventory.CurrentHealth}/{_playerInventory.MaxHealth}";
+            }
         }
     }
 
     private void Update()
     {
+        // Update HP bar every frame
+        if (_hpSlider != null && _playerInventory != null)
+        {
+            _hpSlider.value = _playerInventory.CurrentHealth;
+        }
+
+        if (_hpText != null && _playerInventory != null)
+        {
+            _hpText.text = $"{_playerInventory.CurrentHealth}/{_playerInventory.MaxHealth}";
+        }
+
         if (!_isAlive) return;
 
         // Input processing handled by PlayerController
@@ -97,13 +146,7 @@ public class Player : MonoBehaviour
     /// Restores player stamina.
     /// </summary>
     /// <param name="staminaAmount">Amount of stamina to restore</param>
-    public void RestoreStamina(int staminaAmount)
-    {
-        if (_playerInventory != null)
-        {
-            _playerInventory.RestoreStamina(staminaAmount);
-        }
-    }
+    // Stamina removed from PlayerInventory; RestoreStamina wrapper removed.
 
     /// <summary>
     /// Gets the current player inventory.

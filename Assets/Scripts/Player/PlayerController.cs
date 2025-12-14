@@ -153,15 +153,19 @@ public class PlayerController : MonoBehaviour
         if (_animator == null)
             return;
 
-        _animator.SetBool("IsRunning", true);
-        _animator.SetBool("IsJumping", !_isGrounded && _isJumping);
+        // 점프 애니메이션은 점프 입력으로 설정된 플래그거나 실제로 공중에 떠 있는 경우에 활성화합니다.
+        // 이렇게 하면 점프가 시작되는 프레임에서 애니메이션 전환이 발생합니다.
+        _animator.SetBool("IsRunning", _isGrounded && !_isJumping);
+        _animator.SetBool("IsJumping", _isJumping || !_isGrounded);
         _animator.SetBool("IsDashing", _isDashing);
 
-        if (_isGrounded && _isJumping)
+        // 플레이어가 지면에 있고 위쪽으로 이동 중이 아닐 때만 점프 플래그를 리셋합니다.
+        if (_isGrounded && _verticalVelocity <= 0f)
         {
             _isJumping = false;
         }
     }
+
 
     private void OnTriggerEnter(Collider other)
     {

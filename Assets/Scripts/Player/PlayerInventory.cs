@@ -6,11 +6,13 @@ using UnityEngine;
 public class PlayerInventory : MonoBehaviour
 {
     [SerializeField] private int _maxHealth = 100;
-    [SerializeField] private int _maxStamina = 100;
-    [SerializeField] private int _staminaDrainPerSecond = 20;
+
+    [SerializeField] private float _hpRegenPerSecond = 1f;
+    [SerializeField] private float _hpRegenDelay = 2f; // seconds after taking damage before regen starts
 
     private int _currentHealth;
-  private int _currentStamina;
+    private float _regenAccumulator = 0f;
+    private float _timeSinceDamage = Mathf.Infinity;
 
     /// <summary>
     /// Initializes the player inventory with max values.
@@ -18,32 +20,44 @@ public class PlayerInventory : MonoBehaviour
     public void Initialize()
     {
         _currentHealth = _maxHealth;
-        _currentStamina = _maxStamina;
     }
 
     private void Update()
     {
-        // Regenerate stamina over time when not dashing
-  if (_currentStamina < _maxStamina)
+        // Handle HP regeneration after delay
+        _timeSinceDamage += Time.deltaTime;
+
+        if (_currentHealth < _maxHealth && _timeSinceDamage >= _hpRegenDelay)
         {
-            _currentStamina += (int)(_maxStamina * 0.5f * Time.deltaTime);
-       _currentStamina = Mathf.Min(_currentStamina, _maxStamina);
+            _regenAccumulator += _hpRegenPerSecond * Time.deltaTime;
+            int healAmount = Mathf.FloorToInt(_regenAccumulator);
+            if (healAmount > 0)
+            {
+                _currentHealth += healAmount;
+                _currentHealth = Mathf.Min(_currentHealth, _maxHealth);
+                _regenAccumulator -= healAmount;
+            }
         }
     }
 
-/// <summary>
-    /// Drains stamina for dash ability.
+  /// <summary>
+    /// Consumes player health to pay dash cost.
+    /// Will not allow health to drop to 0 or below (minimum 1 remains).
     /// </summary>
-    /// <param name="amount">Amount of stamina to drain</param>
-  /// <returns>True if stamina was successfully drained, false if insufficient stamina</returns>
+    /// <param name="amount">Amount of HP to consume</param>
+    /// <returns>True if HP was successfully consumed, false if insufficient HP to keep player alive</returns>
   public bool DrainStamina(int amount)
     {
- if (_currentStamina >= amount)
+        // Ensure draining doesn't kill the player: require that health after drain stays >= 1
+        if (_currentHealth - amount < 1)
         {
-            _currentStamina -= amount;
-            return true;
-  }
-        return false;
+            return false;
+        }
+
+        _currentHealth -= amount;
+        _currentHealth = Mathf.Max(_currentHealth, 1);
+        Debug.Log($"PlayerInventory: Consumed {amount} HP for dash. Current health: {_currentHealth}");
+        return true;
     }
 
     /// <summary>
@@ -54,6 +68,9 @@ public class PlayerInventory : MonoBehaviour
     {
         _currentHealth -= damage;
         _currentHealth = Mathf.Max(_currentHealth, 0);
+        // Reset regen timer
+        _timeSinceDamage = 0f;
+        _regenAccumulator = 0f;
         Debug.Log($"PlayerInventory: Took {damage} damage. Current health: {_currentHealth}");
     }
 
@@ -69,14 +86,8 @@ public class PlayerInventory : MonoBehaviour
     }
 
   /// <summary>
-    /// Restores stamina.
-    /// </summary>
-    /// <param name="staminaAmount">Amount of stamina to restore</param>
-    public void RestoreStamina(int staminaAmount)
-    {
-        _currentStamina += staminaAmount;
-   _currentStamina = Mathf.Min(_currentStamina, _maxStamina);
-    }
+    /// Stamina system removed; health is used for dash cost instead.
+    /// RestoreStamina method removed.
 
     /// <summary>
     /// Gets the current health.
@@ -86,7 +97,7 @@ public class PlayerInventory : MonoBehaviour
 /// <summary>
     /// Gets the current stamina.
     /// </summary>
-    public int CurrentStamina => _currentStamina;
+    // Stamina removed
 
     /// <summary>
     /// Gets the max health.
@@ -96,10 +107,10 @@ public class PlayerInventory : MonoBehaviour
     /// <summary>
     /// Gets the max stamina.
     /// </summary>
-    public int MaxStamina => _maxStamina;
+    // Stamina removed
 
     /// <summary>
-    /// Checks if player has enough stamina for an action.
+    /// Checks if player has enough health to pay a dash cost without dying.
     /// </summary>
-    public bool HasStamina(int requiredAmount) => _currentStamina >= requiredAmount;
+    public bool HasStamina(int requiredAmount) => (_currentHealth - requiredAmount) >= 1;
 }
