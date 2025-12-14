@@ -5,7 +5,7 @@ public class PlayerController : MonoBehaviour
 {
     [SerializeField] private float _forwardSpeed = 10f;
     [SerializeField] private float _dashSpeedMultiplier = 1.5f;
-    [SerializeField] private float _staminaDrainPerSecond = 30f;
+    [SerializeField] private float _dashHealthDrainPerSecond = 10f;
     [SerializeField] private float _jumpHeight = 4.5f;
     [SerializeField] private float _gravity = -25f;
     [SerializeField] private Transform _groundCheck;
@@ -20,6 +20,7 @@ public class PlayerController : MonoBehaviour
     private bool _isDashing;
     private bool _isGrounded;
     private bool _isJumping;
+    private float _dashDrainAccumulator = 0f;
     private float _touchStartTime;
     private const float _tapThreshold = 0.2f;
 
@@ -119,10 +120,20 @@ public class PlayerController : MonoBehaviour
         if (_playerInventory == null)
             return;
 
-        int cost = Mathf.Max(1, Mathf.CeilToInt(_staminaDrainPerSecond * Time.deltaTime));
-        if (!_playerInventory.DrainStamina(cost))
+        // Accumulate fractional HP cost and consume integer HP when available.
+        _dashDrainAccumulator += _dashHealthDrainPerSecond * Time.deltaTime;
+        if (_dashDrainAccumulator >= 1f)
         {
-            ExitDashMode();
+            int cost = Mathf.FloorToInt(_dashDrainAccumulator);
+            // Try to consume health; if cannot (would drop below 1), stop dashing
+            if (!_playerInventory.DrainStamina(cost))
+            {
+                ExitDashMode();
+            }
+            else
+            {
+                _dashDrainAccumulator -= cost;
+            }
         }
     }
 
