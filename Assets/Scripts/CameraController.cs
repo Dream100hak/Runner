@@ -65,7 +65,15 @@ public class CameraController : MonoBehaviour
     private void FollowPlayer()
     {
         Vector3 targetPosition = _playerTransform.position + _offset;
-        transform.position = Vector3.Lerp(transform.position, targetPosition, _smoothSpeed * Time.deltaTime);
+        
+     // For quarter-view camera: follow X and Z, but keep Y fixed to maintain viewing angle
+        // Only interpolate X and Z axes for smooth tracking
+        Vector3 currentPos = transform.position;
+   currentPos.x = Mathf.Lerp(currentPos.x, targetPosition.x, _smoothSpeed * Time.deltaTime);
+      currentPos.z = Mathf.Lerp(currentPos.z, targetPosition.z, _smoothSpeed * Time.deltaTime);
+ // Y position stays at offset (don't follow player's Y movement)
+   
+        transform.position = currentPos;
     }
 
     /// <summary>
@@ -73,8 +81,15 @@ public class CameraController : MonoBehaviour
     /// </summary>
     private void ApplyCameraShake()
     {
-        Vector3 shakeOffset = Random.insideUnitSphere * _shakeIntensity;
-     transform.position = _originalPosition + shakeOffset;
+        // Shake only on Z axis (forward-back) and Y axis (up-down)
+        // Do NOT shake on X axis (left-right) to maintain stable view
+     Vector3 shakeOffset = new Vector3(
+            0, // X axis: no shake (keep view centered)
+          Random.Range(-_shakeIntensity, _shakeIntensity),  // Y axis: vertical shake
+            Random.Range(-_shakeIntensity, _shakeIntensity)   // Z axis: forward-back shake
+        );
+        
+        transform.position = _originalPosition + shakeOffset;
     }
 
     /// <summary>
