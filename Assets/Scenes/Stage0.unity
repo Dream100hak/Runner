@@ -205,8 +205,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b6840b94b63486543b07800ba3cf9ab2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player
-  _hpSlider: {fileID: 0}
-  _hpText: {fileID: 0}
 --- !u!143 &49937400
 CharacterController:
   m_ObjectHideFlags: 0
@@ -232,6 +230,22 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 1, z: 0}
+--- !u!114 &49937402
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 49937389}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5537d65beb23d774398f331559b46c72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerUI
+  hpBarSlider: {fileID: 0}
+  hpBarText: {fileID: 0}
+  hpBarObjectName: UI_HpBar
+  hpTextObjectName: UI_HPBarText
 --- !u!1 &209568389
 GameObject:
   m_ObjectHideFlags: 0
@@ -375,6 +389,37 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 4.62841, y: -0.5, z: 6.56589}
   m_LocalScale: {x: 1000, y: 1, z: 1000}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &499475383
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 499475384}
+  m_Layer: 0
+  m_Name: WorldTimer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &499475384
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 499475383}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.37778, y: 0, z: 0.26167}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -542,6 +587,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 8932247435063250547, guid: f63fbc7cc1ad1d94ca64e82b70053680, type: 3}
       insertIndex: -1
       addedObject: {fileID: 49937400}
+    - targetCorrespondingSourceObject: {fileID: 8932247435063250547, guid: f63fbc7cc1ad1d94ca64e82b70053680, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 49937402}
   m_SourcePrefab: {fileID: 100100000, guid: f63fbc7cc1ad1d94ca64e82b70053680, type: 3}
 --- !u!1 &786015967
 GameObject:
@@ -1604,3 +1652,4 @@ SceneRoots:
   - {fileID: 354570259}
   - {fileID: 1829093841}
   - {fileID: 1935828736}
+  - {fileID: 499475384}
