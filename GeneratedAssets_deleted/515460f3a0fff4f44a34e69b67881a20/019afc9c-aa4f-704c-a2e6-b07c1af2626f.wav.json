@@ -1,0 +1,13 @@
+{
+    "asset": "515460f3a0fff4f44a34e69b67881a20",
+    "fileName": "019afc9c-aa4f-704c-a2e6-b07c1af2626f.wav",
+    "prompt": "i want human walking sound ",
+    "negativePrompt": "",
+    "model": "5de0686a-fb27-40e5-9df0-28ae810d70ca",
+    "modelName": "ElevenLabs Sound Effects V2",
+    "customSeed": -1,
+    "w3CTraceId": "ac0af8886516ad2b38cdb7ed77ab042a",
+    "duration": 10.0,
+    "autoTrim": false,
+    "hasReference": false
+}
