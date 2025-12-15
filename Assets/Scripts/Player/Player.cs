@@ -27,10 +27,7 @@ public class Player : MonoBehaviour
     private void Start()
     {
         // Initialize player state
-        if (_playerInventory != null)
-        {
-            _playerInventory.Initialize();
-        }
+        // Health is now managed by PlayerStats via PlayerInventory
     }
 
     private void Update()
@@ -53,7 +50,7 @@ public class Player : MonoBehaviour
             _playerInventory.TakeDamage(damage);
 
             // Check if player is dead
-            if (_playerInventory.CurrentHealth <= 0)
+            if (_playerInventory.CurrentHealth <= 0f)
             {
                 Die();
             }

@@ -28,6 +28,13 @@ public class WorldTimer : MonoBehaviour
     [SerializeField] private float dayIntensity = 1f;
     [SerializeField] private float nightIntensity = 0.05f;
 
+    [Header("Fog")]
+    [SerializeField] private bool enableFog = true;
+    [SerializeField] private Color fogDayColor = new Color(0.8f, 0.85f, 0.9f, 1f);
+    [SerializeField] private Color fogNightColor = new Color(0.02f, 0.05f, 0.1f, 1f);
+    [SerializeField] private float fogDensityDay = 0.003f;
+    [SerializeField] private float fogDensityNight = 0.04f;
+
     [Header("Camera")]
     [SerializeField] private Camera targetCamera;
 
@@ -55,7 +62,6 @@ public class WorldTimer : MonoBehaviour
         if (targetCamera == null) targetCamera = Camera.main;
         if (targetCamera != null) _originalCamBg = targetCamera.backgroundColor;
 
-        // Find a directional light in scene
         var lights = FindObjectsOfType<Light>();
         foreach (var l in lights)
         {
@@ -68,10 +74,8 @@ public class WorldTimer : MonoBehaviour
 
         _originalAmbient = RenderSettings.ambientSkyColor;
 
-        // Instance the skybox material so we can modify it at runtime without changing the asset
         if (RenderSettings.skybox != null)
         {
-            // create an instance and assign it back so changes affect only this scene at runtime
             _skyboxInstance = new Material(RenderSettings.skybox);
             RenderSettings.skybox = _skyboxInstance;
 
@@ -79,6 +83,12 @@ public class WorldTimer : MonoBehaviour
             if (_skyboxInstance.HasProperty("_GroundColor")) _skyboxOriginalGround = _skyboxInstance.GetColor("_GroundColor");
             if (_skyboxInstance.HasProperty("_Exposure")) _skyboxOriginalExposure = _skyboxInstance.GetFloat("_Exposure");
             if (_skyboxInstance.HasProperty("_AtmosphereThickness")) _skyboxOriginalAtmosphere = _skyboxInstance.GetFloat("_AtmosphereThickness");
+        }
+
+        if (enableFog)
+        {
+            RenderSettings.fog = true;
+            RenderSettings.fogMode = FogMode.ExponentialSquared;
         }
     }
 
@@ -125,68 +135,63 @@ public class WorldTimer : MonoBehaviour
     private void UpdateUI(float t)
     {
         if (timeText == null) return;
-        // Show with two decimals like 30.00
         timeText.text = t.ToString("F2");
     }
 
     private void UpdateLighting(float t)
     {
         if (startTime <= 0f) return;
-        float progress = 1f - (t / startTime); // 0 at start, 1 at end
+        float progress = 1f - (t / startTime);
 
-        // Interpolate directional light color and intensity
         if (_directionalLight != null)
         {
             if (progress < 0.6f)
             {
-                // day -> sunset (first 60%)
                 float p = Mathf.InverseLerp(0f, 0.6f, progress);
                 _directionalLight.color = Color.Lerp(dayColor, sunsetColor, p);
                 _directionalLight.intensity = Mathf.Lerp(dayIntensity, dayIntensity * 0.6f, p);
             }
             else
             {
-                // sunset -> night (last 40%)
                 float p = Mathf.InverseLerp(0.6f, 1f, progress);
                 _directionalLight.color = Color.Lerp(sunsetColor, nightColor, p);
                 _directionalLight.intensity = Mathf.Lerp(dayIntensity * 0.6f, nightIntensity, p);
             }
         }
 
-        // Ambient sky color
         RenderSettings.ambientSkyColor = Color.Lerp(dayColor, nightColor, progress);
 
-        // Camera background
         if (targetCamera != null)
         {
             targetCamera.backgroundColor = Color.Lerp(_originalCamBg, nightColor * 0.35f, progress);
         }
 
-        // Skybox changes (if procedural or supports _SkyTint/_Exposure)
+        if (enableFog)
+        {
+            RenderSettings.fogColor = Color.Lerp(fogDayColor, fogNightColor, progress);
+            RenderSettings.fogDensity = Mathf.Lerp(fogDensityDay, fogDensityNight, progress);
+        }
+
         if (_skyboxInstance != null)
         {
-            // tint sky from day -> sunset -> night
             Color targetTint = (progress < 0.6f)
                 ? Color.Lerp(_skyboxOriginalTint, sunsetColor, Mathf.InverseLerp(0f, 0.6f, progress))
                 : Color.Lerp(sunsetColor, nightColor, Mathf.InverseLerp(0.6f, 1f, progress));
 
             if (_skyboxInstance.HasProperty("_SkyTint")) _skyboxInstance.SetColor("_SkyTint", targetTint);
 
-            // lower exposure as night approaches
             if (_skyboxInstance.HasProperty("_Exposure"))
             {
                 float exposure = Mathf.Lerp(_skyboxOriginalExposure, 0.15f, progress);
                 _skyboxInstance.SetFloat("_Exposure", exposure);
             }
 
-            // optionally thin atmosphere toward night
             if (_skyboxInstance.HasProperty("_AtmosphereThickness"))
             {
                 float atm = Mathf.Lerp(_skyboxOriginalAtmosphere, 0.4f, progress);
                 _skyboxInstance.SetFloat("_AtmosphereThickness", atm);
             }
 
-            // ground color tint
             if (_skyboxInstance.HasProperty("_GroundColor"))
             {
                 Color ground = Color.Lerp(_skyboxOriginalGround, nightColor * 0.5f, progress);
@@ -194,15 +199,12 @@ public class WorldTimer : MonoBehaviour
             }
         }
 
-        // Make UI time more urgent when close to 0
         if (timeText != null)
         {
             float glow = Mathf.Clamp01(progress * 2f);
-            // tint from white -> orange -> red near end
             Color baseCol = Color.Lerp(Color.white, new Color(1f, 0.6f, 0.2f), Mathf.Clamp01(progress));
             Color final = Color.Lerp(baseCol, Color.red, Mathf.SmoothStep(0.8f, 1f, progress));
             timeText.color = final;
-            // slight scale pulse
             float scale = 1f + Mathf.Sin(Time.time * 8f) * 0.02f * (0.5f + glow);
             timeText.transform.localScale = Vector3.one * scale;
         }
@@ -210,21 +212,17 @@ public class WorldTimer : MonoBehaviour
 
     private IEnumerator WorldEndSequence()
     {
-        // Final flash / shake / extinguish
-        // flash text and camera
         if (timeText != null)
         {
             timeText.text = "0.00";
         }
 
-        // Attempt camera shake if CameraController exists
         var camController = FindObjectOfType<CameraController>();
         if (camController != null)
         {
             camController.Shake(0.6f, 1.2f);
         }
 
-        // Quick pulse to red and scale up
         if (timeText != null)
         {
             float dur = 1.2f;
@@ -233,14 +231,12 @@ public class WorldTimer : MonoBehaviour
             {
                 elapsed += Time.deltaTime;
                 float p = elapsed / dur;
-                // text color -> red -> black
                 timeText.color = Color.Lerp(Color.red, Color.black, p);
                 timeText.transform.localScale = Vector3.one * Mathf.Lerp(1.15f, 0.9f, p);
                 yield return null;
             }
         }
 
-        // Darken scene fully
         if (_directionalLight != null)
         {
             _directionalLight.color = Color.black;
@@ -248,12 +244,9 @@ public class WorldTimer : MonoBehaviour
         }
         RenderSettings.ambientSkyColor = Color.black;
         if (targetCamera != null) targetCamera.backgroundColor = Color.black;
-
-        // Optionally: add a lingering red overlay by tinting ambient
         yield return null;
     }
 
-    // Utility: search scene for component on object with name (case-insensitive)
     private T FindComponentInSceneByName<T>(string objectName) where T : Component
     {
         var scene = SceneManager.GetActiveScene();

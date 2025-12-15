@@ -1,116 +1,97 @@
 using UnityEngine;
 
 /// <summary>
-/// Manages player stats including health and stamina.
+/// Handles health regeneration and dash cost using PlayerStats data.
 /// </summary>
 public class PlayerInventory : MonoBehaviour
 {
-    [SerializeField] private int _maxHealth = 100;
+    [SerializeField] private PlayerStats _playerStats;
 
     [SerializeField] private float _hpRegenPerSecond = 1f;
     [SerializeField] private float _hpRegenDelay = 2f; // seconds after taking damage before regen starts
 
-    private int _currentHealth;
     private float _regenAccumulator = 0f;
     private float _timeSinceDamage = Mathf.Infinity;
 
-    /// <summary>
-    /// Initializes the player inventory with max values.
-    /// </summary>
-    public void Initialize()
+    private void Awake()
     {
-        _currentHealth = _maxHealth;
+        if (_playerStats == null)
+        {
+            _playerStats = GetComponent<PlayerStats>();
+        }
+
+        if (_playerStats == null)
+        {
+            Debug.LogError("PlayerInventory: PlayerStats component not found");
+        }
     }
 
     private void Update()
     {
-        // Handle HP regeneration after delay
+        if (_playerStats == null) return;
+
         _timeSinceDamage += Time.deltaTime;
 
-        if (_currentHealth < _maxHealth && _timeSinceDamage >= _hpRegenDelay)
+        if (_playerStats.CurrentHP < _playerStats.MaxHP && _timeSinceDamage >= _hpRegenDelay)
         {
             _regenAccumulator += _hpRegenPerSecond * Time.deltaTime;
-            int healAmount = Mathf.FloorToInt(_regenAccumulator);
-            if (healAmount > 0)
+            float healAmount = Mathf.Floor(_regenAccumulator);
+            if (healAmount >= 1f)
             {
-                _currentHealth += healAmount;
-                _currentHealth = Mathf.Min(_currentHealth, _maxHealth);
+                _playerStats.Heal(healAmount);
                 _regenAccumulator -= healAmount;
+                _timeSinceDamage = 0f;
             }
         }
     }
 
-  /// <summary>
+    /// <summary>
     /// Consumes player health to pay dash cost.
-    /// Will not allow health to drop to 0 or below (minimum 1 remains).
     /// </summary>
-    /// <param name="amount">Amount of HP to consume</param>
-    /// <returns>True if HP was successfully consumed, false if insufficient HP to keep player alive</returns>
-  public bool DrainStamina(int amount)
+    public bool DrainStamina(int amount)
     {
-        // Ensure draining doesn't kill the player: require that health after drain stays >= 1
-        if (_currentHealth - amount < 1)
+        if (_playerStats == null) return false;
+
+        if (!_playerStats.DrainHP(amount))
         {
             return false;
         }
 
-        _currentHealth -= amount;
-        _currentHealth = Mathf.Max(_currentHealth, 1);
-        Debug.Log($"PlayerInventory: Consumed {amount} HP for dash. Current health: {_currentHealth}");
+        _timeSinceDamage = 0f;
+        _regenAccumulator = 0f;
+        Debug.Log($"PlayerInventory: Consumed {amount} HP for dash. Current health: {_playerStats.CurrentHP}");
         return true;
     }
 
     /// <summary>
     /// Applies damage to the player.
     /// </summary>
-    /// <param name="damage">Amount of damage</param>
     public void TakeDamage(int damage)
     {
-        _currentHealth -= damage;
-        _currentHealth = Mathf.Max(_currentHealth, 0);
-        // Reset regen timer
+        if (_playerStats == null) return;
+
+        _playerStats.DrainHP(damage);
         _timeSinceDamage = 0f;
         _regenAccumulator = 0f;
-        Debug.Log($"PlayerInventory: Took {damage} damage. Current health: {_currentHealth}");
+        Debug.Log($"PlayerInventory: Took {damage} damage. Current health: {_playerStats.CurrentHP}");
     }
 
     /// <summary>
     /// Heals the player.
     /// </summary>
-    /// <param name="healAmount">Amount to heal</param>
-    public void Heal(int healAmount)
+    public void Heal(float healAmount)
     {
-        _currentHealth += healAmount;
-        _currentHealth = Mathf.Min(_currentHealth, _maxHealth);
-        Debug.Log($"PlayerInventory: Healed {healAmount}. Current health: {_currentHealth}");
+        if (_playerStats == null) return;
+
+        _playerStats.Heal(healAmount);
     }
 
-  /// <summary>
-    /// Stamina system removed; health is used for dash cost instead.
-    /// RestoreStamina method removed.
+    public float CurrentHealth => _playerStats?.CurrentHP ?? 0f;
+    public float MaxHealth => _playerStats?.MaxHP ?? 0f;
 
-    /// <summary>
-    /// Gets the current health.
-    /// </summary>
-  public int CurrentHealth => _currentHealth;
-
-/// <summary>
-    /// Gets the current stamina.
-    /// </summary>
-    // Stamina removed
-
-    /// <summary>
-    /// Gets the max health.
-    /// </summary>
-    public int MaxHealth => _maxHealth;
-
-    /// <summary>
-    /// Gets the max stamina.
-    /// </summary>
-    // Stamina removed
-
-    /// <summary>
-    /// Checks if player has enough health to pay a dash cost without dying.
-    /// </summary>
-    public bool HasStamina(int requiredAmount) => (_currentHealth - requiredAmount) >= 1;
+    public bool HasStamina(int requiredAmount)
+    {
+        if (_playerStats == null) return false;
+        return _playerStats.CurrentHP - requiredAmount >= 1f;
+    }
 }
