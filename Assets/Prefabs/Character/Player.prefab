@@ -315,7 +315,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: f0ee838dc7a38ab4ab39a054ca61c163, type: 3}
       propertyPath: m_Name
-      value: Hero_Warrior_0
+      value: Player
       objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: f0ee838dc7a38ab4ab39a054ca61c163, type: 3}
       propertyPath: m_Controller
@@ -351,7 +351,10 @@ PrefabInstance:
       addedObject: {fileID: 8518812270596701705}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f0ee838dc7a38ab4ab39a054ca61c163, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2157067520723213389}
+      addedObject: {fileID: 2729698819333121325}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f0ee838dc7a38ab4ab39a054ca61c163, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5247532807179570962}
   m_SourcePrefab: {fileID: 100100000, guid: f0ee838dc7a38ab4ab39a054ca61c163, type: 3}
 --- !u!4 &12319766903214120 stripped
 Transform:
@@ -396,7 +399,7 @@ Rigidbody:
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1
-  m_IsKinematic: 0
+  m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
@@ -425,8 +428,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   _forwardSpeed: 10
-  _dashSpeedMultiplier: 1.5
-  _dashHealthDrainPerSecond: 10
+  _dashSpeedMultiplier: 3
+  _dashHealthDrainPerSecond: 60
   _jumpHeight: 1
   _gravity: -25
   _groundCheck: {fileID: 740930753025321640}
@@ -446,7 +449,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 47dfb9528ab81be42a927f8d518c0148, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerInventory
-  _maxHealth: 100
+  _playerStats: {fileID: 0}
   _hpRegenPerSecond: 0.5
   _hpRegenDelay: 2
 --- !u!143 &8518812270596701705
@@ -474,7 +477,7 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 1, z: 0}
---- !u!114 &2157067520723213389
+--- !u!114 &2729698819333121325
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -483,10 +486,32 @@ MonoBehaviour:
   m_GameObject: {fileID: 8932247435063250547}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5537d65beb23d774398f331559b46c72, type: 3}
+  m_Script: {fileID: 11500000, guid: f16ca032ffd10bd49a1eb0dca15a2b80, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerUI
-  hpBarSlider: {fileID: 0}
-  hpBarText: {fileID: 0}
-  hpBarObjectName: UI_HpBar
-  hpTextObjectName: UI_HPBarText
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerStats
+  _maxHP: 100
+  _attackPower: 10
+  _expToNextLevel: 100
+  _expGrowthFactor: 1.2
+  _recommendedBossLevel: 8
+--- !u!114 &5247532807179570962
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8932247435063250547}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb945fdb7ccc3b244b55988fb19b4e36, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerStatsUI
+  _playerStats: {fileID: 0}
+  _hpText: {fileID: 0}
+  _expText: {fileID: 0}
+  _hpGauge: {fileID: 0}
+  _expGauge: {fileID: 0}
+  hpGaugeName: UI_IMG_HpGauge
+  hpTextName: UI_TMP_HP
+  expGaugeName: UI_IMG_ExpGauge
+  expTextName: UI_TMP_EXP

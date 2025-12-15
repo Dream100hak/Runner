@@ -49,6 +49,7 @@ public class WorldTimer : MonoBehaviour
     private float _skyboxOriginalExposure = 1f;
     private float _skyboxOriginalAtmosphere = 1f;
     private CameraController _cameraController;
+    private CoreGameManager _coreGameManager;
 
     private void Awake()
     {
@@ -95,6 +96,24 @@ public class WorldTimer : MonoBehaviour
         }
     }
 
+    private void OnEnable()
+    {
+        if (CoreGameManager.Instance != null)
+        {
+            _coreGameManager = CoreGameManager.Instance;
+            _coreGameManager.OnStateChanged += OnCoreGameStateChanged;
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (_coreGameManager != null)
+        {
+            _coreGameManager.OnStateChanged -= OnCoreGameStateChanged;
+            _coreGameManager = null;
+        }
+    }
+
     private void Start()
     {
         UpdateUIImmediate();
@@ -104,6 +123,8 @@ public class WorldTimer : MonoBehaviour
     private void Update()
     {
         if (!_running) return;
+        if (_coreGameManager == null) return;
+        if (!IsCountingState(_coreGameManager.CurrentState)) return;
         if (_timeLeft <= 0f) return;
 
         _timeLeft -= Time.deltaTime;
@@ -127,6 +148,19 @@ public class WorldTimer : MonoBehaviour
     public void StopTimer()
     {
         _running = false;
+    }
+
+    private bool IsCountingState(CoreGameManager.GameState state)
+    {
+        return state == CoreGameManager.GameState.Running || state == CoreGameManager.GameState.Battle;
+    }
+
+    private void OnCoreGameStateChanged(CoreGameManager.GameState previous, CoreGameManager.GameState next)
+    {
+        if (!IsCountingState(next))
+        {
+            _running = false;
+        }
     }
 
     private void UpdateUIImmediate()
