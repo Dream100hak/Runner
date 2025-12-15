@@ -48,6 +48,7 @@ public class WorldTimer : MonoBehaviour
     private Color _skyboxOriginalGround = Color.gray;
     private float _skyboxOriginalExposure = 1f;
     private float _skyboxOriginalAtmosphere = 1f;
+    private CameraController _cameraController;
 
     private void Awake()
     {
@@ -61,6 +62,8 @@ public class WorldTimer : MonoBehaviour
 
         if (targetCamera == null) targetCamera = Camera.main;
         if (targetCamera != null) _originalCamBg = targetCamera.backgroundColor;
+
+        _cameraController = FindObjectOfType<CameraController>();
 
         var lights = FindObjectsOfType<Light>();
         foreach (var l in lights)
@@ -217,10 +220,9 @@ public class WorldTimer : MonoBehaviour
             timeText.text = "0.00";
         }
 
-        var camController = FindObjectOfType<CameraController>();
-        if (camController != null)
+        if (_cameraController != null)
         {
-            camController.Shake(0.6f, 1.2f);
+            _cameraController.enabled = false;
         }
 
         if (timeText != null)
@@ -244,6 +246,7 @@ public class WorldTimer : MonoBehaviour
         }
         RenderSettings.ambientSkyColor = Color.black;
         if (targetCamera != null) targetCamera.backgroundColor = Color.black;
+
         yield return null;
     }
 

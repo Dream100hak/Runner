@@ -754,7 +754,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DevilCastleFollower
   _followCamera: {fileID: 786015969}
-  _offset: {x: 0, y: 23.7, z: 65.3}
+  _offset: {x: 0, y: 23.7, z: 60}
   _matchRotation: 0
 --- !u!1001 &766968755
 PrefabInstance:
