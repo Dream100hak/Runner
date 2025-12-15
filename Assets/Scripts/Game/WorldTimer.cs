@@ -168,8 +168,8 @@ public class WorldTimer : MonoBehaviour
 
         if (enableFog)
         {
-            RenderSettings.fogColor = Color.Lerp(fogDayColor, fogNightColor, progress);
-            RenderSettings.fogDensity = Mathf.Lerp(fogDensityDay, fogDensityNight, progress);
+            RenderSettings.fogColor = Color.Lerp(fogNightColor, fogDayColor, progress);
+            RenderSettings.fogDensity = Mathf.Lerp(fogDensityNight, fogDensityDay, progress);
         }
 
         if (_skyboxInstance != null)

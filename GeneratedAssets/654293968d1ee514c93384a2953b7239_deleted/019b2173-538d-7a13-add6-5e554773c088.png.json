@@ -1,0 +1,20 @@
+{
+    "asset": "654293968d1ee514c93384a2953b7239",
+    "fileName": "019b2173-538d-7a13-add6-5e554773c088.png",
+    "prompt": "Hyper casual style RPG game, stone road texture, simple cartoon style, seamless",
+    "negativePrompt": "",
+    "model": "1a2140ea-ccbc-46b5-9008-e0ea714882dc",
+    "modelName": "3D Platformer Environments",
+    "customSeed": -1,
+    "w3CTraceId": "2ddb3767176e1500726d219176b4ef4f",
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0
+}

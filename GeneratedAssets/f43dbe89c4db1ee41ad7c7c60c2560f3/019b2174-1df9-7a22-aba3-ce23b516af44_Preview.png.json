@@ -1,0 +1,11 @@
+{
+    "asset": "f43dbe89c4db1ee41ad7c7c60c2560f3",
+    "fileName": "019b2174-1df9-7a22-aba3-ce23b516af44_Preview.png",
+    "prompt": "Hyper casual style RPG game, stone road texture, simple cartoon style, seamless",
+    "negativePrompt": "",
+    "model": "44ec3749-963a-44b1-aa54-dc19f6ed8ab2",
+    "modelName": "Unity Texture2D",
+    "customSeed": 29310866,
+    "w3CTraceId": "489fc3001bb1ac9445c7b74c26b49e85",
+    "refinementMode": "Generation"
+}

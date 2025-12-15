@@ -585,7 +585,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: f43dbe89c4db1ee41ad7c7c60c2560f3, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -689,7 +689,7 @@ MonoBehaviour:
   nightColor: {r: 0.03, g: 0.05, b: 0.12, a: 1}
   dayIntensity: 1
   nightIntensity: 0.05
-  enableFog: 0
+  enableFog: 1
   fogDayColor: {r: 0.8, g: 0.85, b: 0.9, a: 1}
   fogNightColor: {r: 0.02, g: 0.05, b: 0.1, a: 1}
   fogDensityDay: 0.003
@@ -754,7 +754,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DevilCastleFollower
   _followCamera: {fileID: 786015969}
-  _offset: {x: 0, y: 18, z: 46.1}
+  _offset: {x: 0, y: 23.7, z: 65.3}
   _matchRotation: 0
 --- !u!1001 &766968755
 PrefabInstance:
@@ -3124,7 +3124,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4792540535938273731, guid: 9903df624b99ca544a8d0acbc0193ccd, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.64351916
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4792540535938273731, guid: 9903df624b99ca544a8d0acbc0193ccd, type: 3}
       propertyPath: m_LocalPosition.y
@@ -3190,23 +3190,6 @@ Transform:
   - {fileID: 1002715848}
   m_Father: {fileID: 355928137}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &859091062889173098
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1932765198}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5537d65beb23d774398f331559b46c72, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerUI
-  _playerStats: {fileID: 0}
-  hpBarSlider: {fileID: 0}
-  hpBarText: {fileID: 0}
-  hpBarObjectName: UI_HpBar
-  hpTextObjectName: UI_HPBarText
 --- !u!4 &2038788291804341903
 Transform:
   m_ObjectHideFlags: 0
@@ -3580,9 +3563,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f0ee838dc7a38ab4ab39a054ca61c163, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6934291212348305966}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f0ee838dc7a38ab4ab39a054ca61c163, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 859091062889173098}
   m_SourcePrefab: {fileID: 100100000, guid: f0ee838dc7a38ab4ab39a054ca61c163, type: 3}
 --- !u!114 &7234895795869061719
 MonoBehaviour:
