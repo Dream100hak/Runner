@@ -379,6 +379,54 @@ RectTransform:
   m_AnchoredPosition: {x: -5, y: 0}
   m_SizeDelta: {x: -20, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &215911753
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 215911754}
+  - component: {fileID: 215911755}
+  m_Layer: 0
+  m_Name: '@FieldEncounterManager'
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &215911754
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 215911753}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 9.81249, y: 0, z: 17.14175}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &215911755
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 215911753}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67446de433b8d0245bbe0b7186d41e9d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FieldEncounterManager
+  checkInterval: 1.5
+  minSpeedForEncounter: 1
+  encounterChance: 0.25
+  battleCooldown: 3
 --- !u!1 &238840889
 GameObject:
   m_ObjectHideFlags: 0
@@ -671,7 +719,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldTimer
   startTime: 30
-  startOnAwake: 1
   timeText: {fileID: 0}
   timeTextObjectName: UI_TimeText
   dayColor: {r: 1, g: 0.95, b: 0.8, a: 1}
@@ -1855,6 +1902,67 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1448439761}
   m_CullTransparentMesh: 1
+--- !u!1 &1465223586
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1465223588}
+  - component: {fileID: 1465223587}
+  m_Layer: 0
+  m_Name: '@BattleManager'
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1465223587
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1465223586}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3980a5f5823ea7e4d8aef0a93fb73cbf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BattleManager
+  _player: {fileID: 0}
+  _enemy: {fileID: 0}
+  moveSpeed: 6
+  contactThreshold: 1
+  knockbackDistance: 1.5
+  deathKnockbackMultiplier: 3
+  impactEffectPrefab: {fileID: 0}
+  shakeIntensity: 0.25
+  shakeDuration: 0.15
+  stageCenterOffset: {x: 0, y: 0, z: 0}
+  playerBattleOffset: {x: -1.4, y: 0, z: 0}
+  enemyBattleOffset: {x: 1.4, y: 0, z: 0}
+  stagePrefab: {fileID: 0}
+  stageScale: {x: 3.5, y: 0.18, z: 3.5}
+  stageFloorColor: {r: 0.45, g: 0.35, b: 0.25, a: 1}
+  cameraOffset: {x: 0, y: 5.5, z: -6}
+  cameraEulerAngles: {x: 45, y: 180, z: 0}
+--- !u!4 &1465223588
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1465223586}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 9.81249, y: 0, z: 17.14174}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1535918288
 GameObject:
   m_ObjectHideFlags: 0
@@ -3150,3 +3258,5 @@ SceneRoots:
   - {fileID: 499475384}
   - {fileID: 13798577393443487}
   - {fileID: 1409988890}
+  - {fileID: 1465223588}
+  - {fileID: 215911754}

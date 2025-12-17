@@ -12,7 +12,6 @@ public class WorldTimer : MonoBehaviour
 {
     [Header("Timer")]
     [SerializeField] private float startTime = 30f;
-    [SerializeField] private bool startOnAwake = true;
 
     [Header("UI")]
     [SerializeField] private TMP_Text timeText;
@@ -39,7 +38,8 @@ public class WorldTimer : MonoBehaviour
     [SerializeField] private Camera targetCamera;
 
     private float _timeLeft;
-    private bool _running;
+    private float _totalTime;
+    private bool _timeExpired;
     private Light _directionalLight;
     private Color _originalAmbient;
     private Color _originalCamBg;
@@ -53,7 +53,8 @@ public class WorldTimer : MonoBehaviour
 
     private void Awake()
     {
-        _timeLeft = Mathf.Max(0f, startTime);
+        _totalTime = Mathf.Max(0.01f, startTime);
+        _timeLeft = _totalTime;
 
         if (timeText == null && !string.IsNullOrEmpty(timeTextObjectName))
         {
@@ -98,56 +99,74 @@ public class WorldTimer : MonoBehaviour
 
     private void OnEnable()
     {
-        if (CoreGameManager.Instance != null)
-        {
-            _coreGameManager = CoreGameManager.Instance;
-            _coreGameManager.OnStateChanged += OnCoreGameStateChanged;
-        }
+        TrySubscribeCore();
     }
 
     private void OnDisable()
     {
-        if (_coreGameManager != null)
-        {
-            _coreGameManager.OnStateChanged -= OnCoreGameStateChanged;
-            _coreGameManager = null;
-        }
+        UnsubscribeFromCore();
     }
 
     private void Start()
     {
+        TrySubscribeCore();
         UpdateUIImmediate();
-        if (startOnAwake) StartTimer();
     }
 
-    private void Update()
+    private void TrySubscribeCore()
     {
-        if (!_running) return;
-        if (_coreGameManager == null) return;
-        if (!IsCountingState(_coreGameManager.CurrentState)) return;
-        if (_timeLeft <= 0f) return;
+        if (_coreGameManager != null)
+            return;
 
-        _timeLeft -= Time.deltaTime;
-        if (_timeLeft < 0f) _timeLeft = 0f;
+        if (CoreGameManager.Instance == null)
+            return;
+
+        _coreGameManager = CoreGameManager.Instance;
+        _coreGameManager.OnStateChanged += OnCoreGameStateChanged;
+        _coreGameManager.OnTimeUpdated += OnTimeUpdated;
+        _coreGameManager.OnTimeExpired += OnTimeExpired;
+        SyncWithCoreTimer();
+    }
+
+    private void UnsubscribeFromCore()
+    {
+        if (_coreGameManager == null)
+            return;
+
+        _coreGameManager.OnStateChanged -= OnCoreGameStateChanged;
+        _coreGameManager.OnTimeUpdated -= OnTimeUpdated;
+        _coreGameManager.OnTimeExpired -= OnTimeExpired;
+        _coreGameManager = null;
+    }
+
+    private void SyncWithCoreTimer()
+    {
+        if (_coreGameManager == null)
+            return;
+
+        _totalTime = Mathf.Max(0.01f, _coreGameManager.StartTimeLimit);
+        _timeLeft = Mathf.Clamp(_coreGameManager.TimeLeft, 0f, _totalTime);
+        _timeExpired = _timeLeft <= 0f;
+        UpdateUIImmediate();
+    }
+
+    private void OnTimeUpdated(float remaining)
+    {
+        _timeLeft = Mathf.Max(0f, remaining);
+        if (_coreGameManager != null)
+            _totalTime = Mathf.Max(0.01f, _coreGameManager.StartTimeLimit);
+        _timeExpired = false;
         UpdateUI(_timeLeft);
         UpdateLighting(_timeLeft);
-
-        if (_timeLeft == 0f)
-        {
-            _running = false;
-            StartCoroutine(WorldEndSequence());
-        }
     }
 
-    public void StartTimer()
+    private void OnTimeExpired()
     {
-        _timeLeft = Mathf.Max(0f, startTime);
-        _running = true;
-    }
+        if (_timeExpired)
+            return;
 
-    public void StopTimer()
-    {
-        _running = false;
+        _timeExpired = true;
+        StartCoroutine(WorldEndSequence());
     }
 
     private bool IsCountingState(CoreGameManager.GameState state)
@@ -157,9 +176,14 @@ public class WorldTimer : MonoBehaviour
 
     private void OnCoreGameStateChanged(CoreGameManager.GameState previous, CoreGameManager.GameState next)
     {
-        if (!IsCountingState(next))
+        if (IsCountingState(next))
         {
-            _running = false;
+            _timeExpired = false;
+            SyncWithCoreTimer();
+        }
+        else
+        {
+            UpdateUIImmediate();
         }
     }
 
@@ -177,8 +201,10 @@ public class WorldTimer : MonoBehaviour
 
     private void UpdateLighting(float t)
     {
-        if (startTime <= 0f) return;
-        float progress = 1f - (t / startTime);
+        float total = _totalTime > 0f ? _totalTime : Mathf.Max(0.01f, startTime);
+        if (total <= 0f) return;
+
+        float progress = Mathf.Clamp01(total <= 0f ? 1f : 1f - (t / total));
 
         if (_directionalLight != null)
         {

@@ -16,7 +16,6 @@ public class CoreGameManager : MonoBehaviour
 
     [SerializeField] private float _startTimeLimit = 30f;
 
-
     [SerializeField]
     private GameState _currentState = GameState.Intro;
     private float _timeLeft;
@@ -24,6 +23,7 @@ public class CoreGameManager : MonoBehaviour
 
     public GameState CurrentState => _currentState;
     public float TimeLeft => _timeLeft;
+    public float StartTimeLimit => _startTimeLimit;
 
     private void Awake()
     {
@@ -67,6 +67,7 @@ public class CoreGameManager : MonoBehaviour
     {
         _timeLeft = _startTimeLimit;
         SetState(GameState.Running);
+        OnTimeUpdated?.Invoke(_timeLeft);
     }
 
     public void EnterBattle()
