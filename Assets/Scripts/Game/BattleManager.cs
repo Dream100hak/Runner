@@ -7,7 +7,6 @@ public class BattleManager : MonoBehaviour
 {
     [Header("Participants")]
     [SerializeField] private Player _player;
-    [SerializeField] private EnemyStats _enemy;
 
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 6f;
@@ -23,12 +22,11 @@ public class BattleManager : MonoBehaviour
     [SerializeField] private float shakeDuration = 0.15f;
 
     [Header("Stage")]
-    [SerializeField] private Vector3 stageCenterOffset = Vector3.zero;
-    [SerializeField] private Vector3 playerBattleOffset = new Vector3(-1.4f, 0f, 0f);
-    [SerializeField] private Vector3 enemyBattleOffset = new Vector3(1.4f, 0f, 0f);
-    [SerializeField] private GameObject stagePrefab;
-    [SerializeField] private Vector3 stageScale = new Vector3(3.5f, 0.18f, 3.5f);
-    [SerializeField] private Color stageFloorColor = new Color(0.45f, 0.35f, 0.25f);
+    [SerializeField] private Vector3 stageCenterOffset = Vector3.up * -1;
+    [SerializeField] private Transform playerSpawnPoint;
+    [SerializeField] private Transform enemySpawnPoint;
+    [SerializeField] private EnemyStats enemyPrefab;
+    [SerializeField] private Vector3 enemyEulerAngles = new Vector3(0f, 180f, 0f);
 
     [Header("Battle Camera")]
     [SerializeField] private Vector3 cameraOffset = new Vector3(0f, 5.5f, -6f);
@@ -45,11 +43,12 @@ public class BattleManager : MonoBehaviour
 
     private Vector3 _savedPlayerPosition;
     private Quaternion _savedPlayerRotation;
-    private Vector3 _savedEnemyPosition;
-    private Quaternion _savedEnemyRotation;
     private bool _playerControllerWasEnabled;
-    private GameObject _battleStage;
-    private Material _generatedFloorMaterial;
+    [SerializeField]
+    private EnemyStats _spawnedEnemy;
+
+    private CharacterController _playerCharacterController;
+    private bool _playerCharacterControllerWasEnabled;
 
     private void Awake()
     {
@@ -69,10 +68,10 @@ public class BattleManager : MonoBehaviour
 
     private void Update()
     {
-        if (!_battleActive || _player == null || _enemy == null)
+        if (!_battleActive || _player == null || _spawnedEnemy == null)
             return;
 
-        if (!_player.IsAlive || !_enemy.IsAlive)
+        if (!_player.IsAlive || !_spawnedEnemy.IsAlive)
         {
             EndBattle();
             return;
@@ -84,15 +83,22 @@ public class BattleManager : MonoBehaviour
 
     private void EnsureReferences()
     {
+        if (_playerController == null)
+            _playerController = FindObjectOfType<PlayerController>();
+
+        if (_player == null && _playerController != null)
+            _player = _playerController.GetComponent<Player>();
+
         if (_player == null)
             _player = FindObjectOfType<Player>();
-        if (_enemy == null)
-            _enemy = FindObjectOfType<EnemyStats>();
 
         if (_player != null && _playerStats == null)
             _playerStats = _player.GetComponent<PlayerStats>();
-        if (_player != null && _playerController == null)
+        if (_playerController == null && _player != null)
             _playerController = _player.GetComponent<PlayerController>();
+
+        if (_playerController != null && _playerCharacterController == null)
+            _playerCharacterController = _playerController.GetComponent<CharacterController>();
 
         if (_cameraController == null)
             _cameraController = FindObjectOfType<CameraController>();
@@ -101,18 +107,18 @@ public class BattleManager : MonoBehaviour
     private void MoveTowardsTargets()
     {
         Vector3 playerPos = _player.transform.position;
-        Vector3 enemyPos = _enemy.transform.position;
+        Vector3 enemyPos = _spawnedEnemy.transform.position;
 
         Vector3 playerTarget = new Vector3(enemyPos.x, playerPos.y, enemyPos.z);
         Vector3 enemyTarget = new Vector3(playerPos.x, enemyPos.y, playerPos.z);
 
         _player.transform.position = Vector3.MoveTowards(playerPos, playerTarget, moveSpeed * Time.deltaTime);
-        _enemy.transform.position = Vector3.MoveTowards(enemyPos, enemyTarget, moveSpeed * Time.deltaTime);
+        _spawnedEnemy.transform.position = Vector3.MoveTowards(enemyPos, enemyTarget, moveSpeed * Time.deltaTime);
     }
 
     private void DetectAndResolveImpact()
     {
-        float distance = Vector3.Distance(_player.transform.position, _enemy.transform.position);
+        float distance = Vector3.Distance(_player.transform.position, _spawnedEnemy.transform.position);
 
         if (_impactBlocked)
         {
@@ -133,7 +139,7 @@ public class BattleManager : MonoBehaviour
     private void ResolveImpact()
     {
         Vector3 playerPos = _player.transform.position;
-        Vector3 enemyPos = _enemy.transform.position;
+        Vector3 enemyPos = _spawnedEnemy.transform.position;
         Vector3 normal = playerPos - enemyPos;
         if (normal.sqrMagnitude < 0.0001f)
             normal = Vector3.forward;
@@ -141,7 +147,7 @@ public class BattleManager : MonoBehaviour
         normal.Normalize();
 
         float playerAttack = _playerStats?.AttackPower ?? 5f;
-        float enemyAttack = _enemy.AttackPower;
+        float enemyAttack = _spawnedEnemy.AttackPower;
 
         int damageToPlayer = Mathf.CeilToInt(enemyAttack);
         int damageToEnemy = Mathf.CeilToInt(playerAttack);
@@ -149,10 +155,9 @@ public class BattleManager : MonoBehaviour
         Debug.Log($"BattleManager: 충돌! 플레이어 -{damageToPlayer} / 적 -{damageToEnemy}");
 
         _player.TakeDamage(damageToPlayer);
-        _enemy.ApplyDamage(damageToEnemy);
+        _spawnedEnemy.ApplyDamage(damageToEnemy);
 
         SpawnImpactEffect(Vector3.Lerp(playerPos, enemyPos, 0.5f));
-        _cameraController?.Shake(shakeIntensity, shakeDuration);
 
         ApplyKnockback(normal, playerAttack, enemyAttack);
 
@@ -164,10 +169,10 @@ public class BattleManager : MonoBehaviour
             return;
         }
 
-        if (!_enemy.IsAlive)
+        if (!_spawnedEnemy.IsAlive)
         {
             Debug.Log("BattleManager: 적 사망");
-            ApplyDeathKnockback(_enemy.transform, normal, false);
+            ApplyDeathKnockback(_spawnedEnemy.transform, normal, false);
             EndBattle();
         }
     }
@@ -184,7 +189,7 @@ public class BattleManager : MonoBehaviour
         enemyShift.y = 0f;
 
         _player.transform.position += playerShift;
-        _enemy.transform.position += enemyShift;
+        _spawnedEnemy.transform.position += enemyShift;
     }
 
     private void ApplyDeathKnockback(Transform victim, Vector3 normal, bool isPlayer)
@@ -215,7 +220,6 @@ public class BattleManager : MonoBehaviour
         Debug.Log("BattleManager: 전투 시작");
         _battleActive = true;
         _impactBlocked = false;
-        _enemy?.ResetStats();
         SetupBattleScene();
     }
 
@@ -232,102 +236,57 @@ public class BattleManager : MonoBehaviour
 
     private void SetupBattleScene()
     {
-        if (_player == null || _enemy == null)
+        if (_player == null)
+            return;
+        if (enemyPrefab == null)
             return;
 
         _savedPlayerPosition = _player.transform.position;
         _savedPlayerRotation = _player.transform.rotation;
-        _savedEnemyPosition = _enemy.transform.position;
-        _savedEnemyRotation = _enemy.transform.rotation;
+        EnemyStats battleEnemy = PrepareEnemyInstance();
+        if (battleEnemy == null)
+            return;
+
+        _spawnedEnemy = battleEnemy;
+        battleEnemy.ResetStats();
+
         _playerControllerWasEnabled = _playerController != null && _playerController.enabled;
         if (_playerController != null)
             _playerController.enabled = false;
 
-        Vector3 arenaCenter = _savedPlayerPosition + stageCenterOffset;
-        BuildStage(arenaCenter);
+        _playerCharacterControllerWasEnabled = _playerCharacterController != null && _playerCharacterController.enabled;
+        if (_playerCharacterController != null)
+            _playerCharacterController.enabled = false;
 
-        Vector3 playerBattlePosition = arenaCenter + playerBattleOffset;
-        playerBattlePosition.y = arenaCenter.y;
-        _player.transform.position = playerBattlePosition;
+        Vector3 playerPosition = playerSpawnPoint != null ? playerSpawnPoint.position : _savedPlayerPosition;
+        Vector3 enemyPosition = enemySpawnPoint != null ? enemySpawnPoint.position : _savedPlayerPosition + Vector3.right;
 
-        Vector3 enemyBattlePosition = arenaCenter + enemyBattleOffset;
-        enemyBattlePosition.y = arenaCenter.y;
-        _enemy.transform.position = enemyBattlePosition;
+        _player.transform.position = playerPosition;
+        if (_spawnedEnemy != null)
+            _spawnedEnemy.transform.position = enemyPosition;
+
+        AlignParticipantsFacing();
 
         if (_cameraController != null)
         {
-            Vector3 camPosition = arenaCenter + cameraOffset;
+            Vector3 camPosition = cameraOffset;
             Quaternion camRotation = Quaternion.Euler(cameraEulerAngles);
             _cameraController.SetManualView(camPosition, camRotation);
         }
     }
 
-    private void CleanupBattleScene()
+    private void AlignParticipantsFacing()
     {
-        if (_player != null)
-        {
-            _player.transform.position = _savedPlayerPosition;
-            _player.transform.rotation = _savedPlayerRotation;
-        }
-
-        if (_enemy != null)
-        {
-            _enemy.transform.position = _savedEnemyPosition;
-            _enemy.transform.rotation = _savedEnemyRotation;
-        }
-
-        if (_playerController != null)
-            _playerController.enabled = _playerControllerWasEnabled;
-
-        if (_battleStage != null)
-            Destroy(_battleStage);
-        _battleStage = null;
-
-        _cameraController?.ClearManualView();
-    }
-
-    private void BuildStage(Vector3 center)
-    {
-        if (_battleStage != null)
-            Destroy(_battleStage);
-
-        if (stagePrefab != null)
-        {
-            _battleStage = Instantiate(stagePrefab, center, Quaternion.identity);
+        if (_player == null || _spawnedEnemy == null)
             return;
-        }
 
-        _battleStage = new GameObject("GeneratedBattleStage");
-        _battleStage.transform.position = center;
-
-        GameObject floor = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        floor.transform.SetParent(_battleStage.transform, false);
-        floor.transform.localScale = stageScale;
-        floor.transform.localPosition = Vector3.zero;
-        floor.transform.rotation = Quaternion.identity;
-        Destroy(floor.GetComponent<Collider>());
-
-        Renderer floorRenderer = floor.GetComponent<Renderer>();
-        floorRenderer.sharedMaterial = GetFloorMaterial(stageFloorColor);
-    }
-
-    private Material GetFloorMaterial(Color color)
-    {
-        if (_generatedFloorMaterial == null)
+        Vector3 playerToEnemy = _spawnedEnemy.transform.position - _player.transform.position;
+        playerToEnemy.y = 0f;
+        if (playerToEnemy.sqrMagnitude > 0.001f)
         {
-            _generatedFloorMaterial = new Material(Shader.Find("Standard"));
-            _generatedFloorMaterial.SetFloat("_Glossiness", 0f);
+            _player.transform.rotation = Quaternion.LookRotation(playerToEnemy);
+            _spawnedEnemy.transform.rotation = Quaternion.LookRotation(-playerToEnemy.normalized);
         }
-        _generatedFloorMaterial.color = color;
-        return _generatedFloorMaterial;
-    }
-
-    private void OnCoreStateChanged(CoreGameManager.GameState previous, CoreGameManager.GameState next)
-    {
-        if (next == CoreGameManager.GameState.Battle)
-            StartBattle();
-        else if (_battleActive)
-            EndBattle();
     }
 
     private void SubscribeToCore()
@@ -355,5 +314,79 @@ public class BattleManager : MonoBehaviour
 
         _coreGameManager.OnStateChanged -= OnCoreStateChanged;
         _coreSubscribed = false;
+    }
+
+    private void OnCoreStateChanged(CoreGameManager.GameState previous, CoreGameManager.GameState next)
+    {
+        if (next == CoreGameManager.GameState.Battle)
+            StartBattle();
+        else if (_battleActive)
+            EndBattle();
+    }
+
+    private EnemyStats PrepareEnemyInstance()
+    {
+        if (enemyPrefab == null)
+        {
+            return _spawnedEnemy;
+        }
+
+        if (_spawnedEnemy != null)
+        {
+            Destroy(_spawnedEnemy.gameObject);
+            _spawnedEnemy = null;
+        }
+
+        _spawnedEnemy = Instantiate(enemyPrefab);
+        _spawnedEnemy.transform.rotation = Quaternion.Euler(enemyEulerAngles);
+        if (enemySpawnPoint != null)
+        {
+            _spawnedEnemy.transform.position = enemySpawnPoint.position;
+        }
+        return _spawnedEnemy;
+    }
+
+    private void CleanupBattleScene()
+    {
+        if (_player != null)
+        {
+            _player.transform.position = _savedPlayerPosition;
+            _player.transform.rotation = _savedPlayerRotation;
+        }
+
+        if (_playerCharacterController != null)
+            _playerCharacterController.enabled = _playerCharacterControllerWasEnabled;
+
+        if (_playerController != null)
+            _playerController.enabled = _playerControllerWasEnabled;
+
+        _cameraController?.ClearManualView();
+
+        if (_spawnedEnemy != null)
+        {
+            Destroy(_spawnedEnemy.gameObject);
+            _spawnedEnemy = null;
+        }
+    }
+
+    private void OnDrawGizmos()
+    {
+        Vector3 playerPosition = playerSpawnPoint != null ? playerSpawnPoint.position : transform.position + stageCenterOffset;
+        Vector3 enemyPosition = enemySpawnPoint != null ? enemySpawnPoint.position : transform.position + stageCenterOffset + Vector3.right;
+
+        DrawSpawnGizmo(playerPosition, Color.green, "Player Spawn");
+        DrawSpawnGizmo(enemyPosition, Color.red, "Enemy Spawn");
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawLine(playerPosition, enemyPosition);
+    }
+
+    private static void DrawSpawnGizmo(Vector3 position, Color color, string label)
+    {
+        Gizmos.color = color;
+        Gizmos.DrawWireSphere(position, 0.25f);
+        Gizmos.DrawLine(position + Vector3.up * 0.5f, position - Vector3.up * 0.5f);
+        Gizmos.DrawLine(position + Vector3.forward * 0.5f, position - Vector3.forward * 0.5f);
+        Gizmos.DrawLine(position + Vector3.right * 0.5f, position - Vector3.right * 0.5f);
     }
 }
