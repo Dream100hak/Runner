@@ -72,7 +72,12 @@ public class CoreGameManager : MonoBehaviour
 
     public void EnterBattle()
     {
-        SetState(GameState.Battle);
+        if (_currentState == GameState.Battle) return;
+
+        // Play a quick transition before switching to Battle state
+        var bt = BattleTransition.CreateIfMissing();
+        // small transition (~0.22s) then set state at midpoint
+        bt.Play(0.22f, () => SetState(GameState.Battle));
     }
 
     public void EnterBossCutscene()
@@ -111,5 +116,18 @@ public class CoreGameManager : MonoBehaviour
         OnTimeUpdated?.Invoke(_timeLeft);
       
         _timerActive = _currentState == GameState.Running || _currentState == GameState.Battle;
+    }
+
+    /// <summary>
+    /// Resume the game to Running state without resetting the timer.
+    /// Used for returning from Battle to normal running play.
+    /// </summary>
+    public void ResumeRunning()
+    {
+        if (_currentState == GameState.Running) return;
+
+        // Play the same quick transition used entering battle, then set Running at midpoint
+        var bt = BattleTransition.CreateIfMissing();
+        bt.Play(0.22f, () => SetState(GameState.Running));
     }
 }

@@ -88,8 +88,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 903c679bdeef15a40b49d671adfa72b5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyStats
-  _maxHP: 99999
-  _attackPower: 12
+  _maxHP: 50
+  _attackPower: 1
 --- !u!54 &2873080506530004962
 Rigidbody:
   m_ObjectHideFlags: 0

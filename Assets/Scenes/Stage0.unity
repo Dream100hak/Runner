@@ -389,7 +389,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FieldEncounterManager
   checkInterval: 1.5
   minSpeedForEncounter: 1
-  encounterChance: 0.25
+  encounterChance: 1
   battleCooldown: 3
 --- !u!1 &238840889
 GameObject:
@@ -655,7 +655,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &471516253
 RectTransform:
   m_ObjectHideFlags: 0
@@ -672,8 +672,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -424.6, y: 605}
-  m_SizeDelta: {x: 100, y: 100}
+  m_AnchoredPosition: {x: -333.5, y: 605}
+  m_SizeDelta: {x: 300, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &471516254
 MonoBehaviour:
@@ -765,12 +765,69 @@ MonoBehaviour:
   nightColor: {r: 0.03, g: 0.05, b: 0.12, a: 1}
   dayIntensity: 1
   nightIntensity: 0.05
-  enableFog: 1
+  enableFog: 0
   fogDayColor: {r: 0.4339623, g: 0.4339623, b: 0.4339623, a: 1}
   fogNightColor: {r: 0.25189716, g: 0.23282307, b: 0.4528302, a: 1}
   fogDensityDay: 0.003
   fogDensityNight: 0.04
   targetCamera: {fileID: 0}
+--- !u!1 &545809112
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 545809114}
+  - component: {fileID: 545809113}
+  m_Layer: 0
+  m_Name: '@DamagePopupManager'
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &545809113
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 545809112}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09a6fff77c196b346b05617c7345f8af, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DamagePopupManager
+  popupPrefab: {fileID: 7315745316324679326, guid: 54096c972fb2a5546b8c39981f886742, type: 3}
+  targetCanvas: {fileID: 0}
+  floatDistance: 40
+  duration: 0.9
+  worldHorizontalOffset: -15
+  worldVerticalOffset: 3
+  criticalHorizontalMultiplier: 1
+  criticalVerticalAdd: 1
+  travelDistanceMultiplier: 5
+  travelCriticalMultiplier: 1.2
+  playerPopupScreenOffset: {x: -50, y: 10}
+  enemyPopupScreenOffset: {x: 50, y: 10}
+  maxPopups: 3
+--- !u!4 &545809114
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 545809112}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &695657615 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 5316876033624017785, guid: 9903df624b99ca544a8d0acbc0193ccd, type: 3}
@@ -801,7 +858,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2729698819333121325, guid: f63fbc7cc1ad1d94ca64e82b70053680, type: 3}
       propertyPath: _maxHP
-      value: 9999
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 5138456993300740139, guid: f63fbc7cc1ad1d94ca64e82b70053680, type: 3}
       propertyPath: _hpRegenPerSecond
@@ -917,7 +974,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uC6A9\uC0AC\uB294 3\uC758 \uB370\uBBF8\uC9C0\uB97C \uBC1B\uC558\uB2E4!\u200B"
+  m_text: "\uC6A9\uC0AC\uB294 3\uC758 \uB370\uBBF8\uC9C0\uB97C \uBC1B\uC558\uB2E4!\n\uC6A9\uC0AC\uB294
+    30\uC758 \uB370\uBBF8\uC9C0\uB97C \uBC1B\uC558\uB2E4!\n\u200B"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e892dba16c86f22428826cdde01a67a4, type: 2}
   m_sharedMaterial: {fileID: -2061372604537562557, guid: e892dba16c86f22428826cdde01a67a4, type: 2}
@@ -960,7 +1018,7 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 3
+  m_TextWrappingMode: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
@@ -1928,7 +1986,7 @@ MonoBehaviour:
   m_InputType: 0
   m_AsteriskChar: 42
   m_KeyboardType: 0
-  m_LineType: 0
+  m_LineType: 2
   m_HideMobileInput: 0
   m_HideSoftKeyboard: 0
   m_CharacterValidation: 0
@@ -1962,7 +2020,8 @@ MonoBehaviour:
   m_CaretColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
   m_CustomCaretColor: 0
   m_SelectionColor: {r: 0.65882355, g: 0.80784315, b: 1, a: 0.7529412}
-  m_Text: "\uC6A9\uC0AC\uB294 3\uC758 \uB370\uBBF8\uC9C0\uB97C \uBC1B\uC558\uB2E4!"
+  m_Text: "\uC6A9\uC0AC\uB294 3\uC758 \uB370\uBBF8\uC9C0\uB97C \uBC1B\uC558\uB2E4!\n\uC6A9\uC0AC\uB294
+    30\uC758 \uB370\uBBF8\uC9C0\uB97C \uBC1B\uC558\uB2E4!\n"
   m_CaretBlinkRate: 0.85
   m_CaretWidth: 1
   m_ReadOnly: 0
@@ -2330,7 +2389,7 @@ MonoBehaviour:
   _player: {fileID: 1220555303}
   moveSpeed: 6
   contactThreshold: 1
-  knockbackDistance: 1.5
+  knockbackDistance: 0.5
   deathKnockbackMultiplier: 3
   impactEffectPrefab: {fileID: 0}
   shakeIntensity: 0.25
@@ -2342,6 +2401,7 @@ MonoBehaviour:
   enemyEulerAngles: {x: 0, y: 180, z: 0}
   cameraOffset: {x: -29.69, y: 9, z: 181.68}
   cameraEulerAngles: {x: 50, y: 180, z: 0}
+  minImpactInterval: 0.18
   _spawnedEnemy: {fileID: 0}
 --- !u!4 &1465223588
 Transform:
@@ -2866,6 +2926,60 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!1 &1870035035
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1870035036}
+  - component: {fileID: 1870035037}
+  m_Layer: 0
+  m_Name: '@BattleMessageManager'
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1870035036
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1870035035}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.50975, y: 0, z: 1.26799}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1870035037
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1870035035}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e24efb32d0f4b6143b627bbf6d8cbd68, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BattleMessageManager
+  messageInputField: {fileID: 1402169951}
+  messageFieldName: UI_IPF_Msg
+  displayDuration: 0.5
+  maxMessages: 3
+  messageContainer: {fileID: 1461653037}
+  messagePrefab: {fileID: 4645017940145085166, guid: 5dfecd60d8048894dbc4dc81d6670e7b, type: 3}
+  lineHeight: 70
+  slideDuration: 0.25
+  fadeDuration: 0.18
+  slideInOffset: 10
 --- !u!1 &1935828733
 GameObject:
   m_ObjectHideFlags: 0
@@ -3002,10 +3116,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 30.00
+  m_text: 30'00
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2100000, guid: 79459efec17a4d00a321bdcc27bbc385, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -3029,13 +3143,13 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 100
-  m_fontSizeBase: 100
+  m_fontSize: 50
+  m_fontSizeBase: 50
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 1
+  m_fontStyle: 33
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
   m_textAlignment: 65535
@@ -3153,9 +3267,11 @@ SceneRoots:
   - {fileID: 1935828736}
   - {fileID: 499475384}
   - {fileID: 13798577393443487}
-  - {fileID: 1409988890}
-  - {fileID: 1465223588}
-  - {fileID: 215911754}
   - {fileID: 1780140773}
   - {fileID: 910606703}
   - {fileID: 1402448639}
+  - {fileID: 1409988890}
+  - {fileID: 1465223588}
+  - {fileID: 215911754}
+  - {fileID: 1870035036}
+  - {fileID: 545809114}

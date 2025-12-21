@@ -35,6 +35,11 @@ public class FieldEncounterManager : MonoBehaviour
         {
             _playerController = FindObjectOfType<PlayerController>();
         }
+        // Try to subscribe to core early if available
+        if (CoreGameManager.Instance != null)
+        {
+            SubscribeToCore();
+        }
     }
 
     private void OnEnable()
@@ -70,11 +75,22 @@ public class FieldEncounterManager : MonoBehaviour
 
     private void Update()
     {
-        if (_playerController == null || _coreGameManager == null)
+        // Ensure we have references; attempt to re-resolve if missing
+        if (_playerController == null)
+        {
+            _playerController = GetComponent<PlayerController>();
+            if (_playerController == null)
+                _playerController = FindObjectOfType<PlayerController>();
+        }
+
+        if (_coreGameManager == null)
         {
             SubscribeToCore();
-            return;
         }
+
+        // If still missing required refs, wait until next frame
+        if (_playerController == null || _coreGameManager == null)
+            return;
 
         if (!CanCheckEncounter())
         {
@@ -113,6 +129,7 @@ public class FieldEncounterManager : MonoBehaviour
 
     private void OnCoreStateChanged(CoreGameManager.GameState previous, CoreGameManager.GameState next)
     {
+        Debug.Log($"FieldEncounterManager: Core state changed from {previous} to {next}");
         if (next == CoreGameManager.GameState.Running)
         {
             _cooldownTimer = 0f;

@@ -40,6 +40,11 @@ public class BattleManager : MonoBehaviour
     private bool _battleActive;
     private bool _impactBlocked;
     private bool _coreSubscribed;
+    // timestamp of last processed impact to avoid double-processing on the same contact
+    private float _lastImpactTime = -10f;
+    [SerializeField]
+    [Tooltip("Minimum time in seconds between processing separate impact events. Helps avoid duplicate hits on the same contact.")]
+    private float minImpactInterval = 0.18f;
 
     private Vector3 _savedPlayerPosition;
     private Quaternion _savedPlayerRotation;
@@ -106,6 +111,9 @@ public class BattleManager : MonoBehaviour
 
     private void MoveTowardsTargets()
     {
+        // If an impact just happened, pause approach movement until participants separate
+        if (_impactBlocked) return;
+
         Vector3 playerPos = _player.transform.position;
         Vector3 enemyPos = _spawnedEnemy.transform.position;
 
@@ -131,7 +139,12 @@ public class BattleManager : MonoBehaviour
 
         if (distance <= contactThreshold)
         {
+            // prevent processing multiple impacts in quick succession
+            if (Time.time - _lastImpactTime < minImpactInterval)
+                return;
+
             _impactBlocked = true;
+            _lastImpactTime = Time.time;
             ResolveImpact();
         }
     }
@@ -153,13 +166,32 @@ public class BattleManager : MonoBehaviour
         int damageToEnemy = Mathf.CeilToInt(playerAttack);
 
         Debug.Log($"BattleManager: 충돌! 플레이어 -{damageToPlayer} / 적 -{damageToEnemy}");
+        BattleMessageManager.Instance.ShowPlayerDamage("용사1", damageToPlayer);
+        BattleMessageManager.Instance.ShowEnemyDamage("오크1", damageToEnemy);
+
+        // Show floating damage popups (if manager exists)
+        if (DamagePopupManager.Instance != null)
+        {
+            // show near player and enemy world positions ? pass owner so manager uses configured directions
+            DamagePopupManager.Instance.ShowDamage(_player.transform.position + Vector3.up * 1.2f, damageToPlayer, Color.red, true, DamagePopupManager.PopupOwner.Player);
+            DamagePopupManager.Instance.ShowDamage(_spawnedEnemy.transform.position + Vector3.up * 1.2f, damageToEnemy, Color.white, true, DamagePopupManager.PopupOwner.Enemy);
+        }
 
         _player.TakeDamage(damageToPlayer);
         _spawnedEnemy.ApplyDamage(damageToEnemy);
 
         SpawnImpactEffect(Vector3.Lerp(playerPos, enemyPos, 0.5f));
 
-        ApplyKnockback(normal, playerAttack, enemyAttack);
+        // compute shifts and animate knockback so characters stay apart naturally
+        float playerPush = knockbackDistance + Mathf.Abs(enemyAttack - playerAttack) * 0.1f;
+        float enemyPush = knockbackDistance + Mathf.Abs(playerAttack - enemyAttack) * 0.1f;
+        Vector3 playerShift = normal * playerPush;
+        Vector3 enemyShift = -normal * enemyPush;
+        playerShift.y = 0f;
+        enemyShift.y = 0f;
+
+        // start coroutine to apply knockback over time; movement paused while _impactBlocked is true
+        StartCoroutine(ApplyKnockbackRoutine(playerShift, enemyShift, 0.18f));
 
         if (!_player.IsAlive)
         {
@@ -174,8 +206,41 @@ public class BattleManager : MonoBehaviour
             Debug.Log("BattleManager: 적 사망");
             ApplyDeathKnockback(_spawnedEnemy.transform, normal, false);
             EndBattle();
+            return;
         }
     }
+
+    private System.Collections.IEnumerator ApplyKnockbackRoutine(Vector3 playerShift, Vector3 enemyShift, float duration)
+    {
+        if (_player == null || _spawnedEnemy == null) yield break;
+
+        _impactBlocked = true; // ensure approach is paused during knockback
+
+        Vector3 pStart = _player.transform.position;
+        Vector3 eStart = _spawnedEnemy.transform.position;
+        Vector3 pTarget = pStart + playerShift;
+        Vector3 eTarget = eStart + enemyShift;
+
+        float t = 0f;
+        while (t < duration)
+        {
+            t += Time.deltaTime;
+            float f = Mathf.SmoothStep(0f, 1f, t / duration);
+            if (_player != null) _player.transform.position = Vector3.Lerp(pStart, pTarget, f);
+            if (_spawnedEnemy != null) _spawnedEnemy.transform.position = Vector3.Lerp(eStart, eTarget, f);
+            yield return null;
+        }
+
+        // ensure final positions applied
+        if (_player != null) _player.transform.position = pTarget;
+        if (_spawnedEnemy != null) _spawnedEnemy.transform.position = eTarget;
+
+        // small delay to avoid immediate re-impact
+        yield return new WaitForSeconds(0.08f);
+
+        _impactBlocked = false;
+    }
+
 
     private void ApplyKnockback(Vector3 normal, float playerAttack, float enemyAttack)
     {
@@ -188,6 +253,7 @@ public class BattleManager : MonoBehaviour
         playerShift.y = 0f;
         enemyShift.y = 0f;
 
+        // apply translation so knockback persists; movement coroutine will resume after separation
         _player.transform.position += playerShift;
         _spawnedEnemy.transform.position += enemyShift;
     }
@@ -221,6 +287,7 @@ public class BattleManager : MonoBehaviour
         _battleActive = true;
         _impactBlocked = false;
         SetupBattleScene();
+        BattleMessageManager.Instance.ShowEncounter();
     }
 
     private void EndBattle()
@@ -232,6 +299,11 @@ public class BattleManager : MonoBehaviour
         _battleActive = false;
         _impactBlocked = false;
         CleanupBattleScene();
+        // Notify core game manager to resume running state
+        if (CoreGameManager.Instance != null)
+        {
+            CoreGameManager.Instance.ResumeRunning();
+        }
     }
 
     private void SetupBattleScene()
